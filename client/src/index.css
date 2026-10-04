@@ -1,0 +1,635 @@
+/* ==========================================================================
+   PacedLearner Design System: Cybercore HUD & Neural Coding Deck
+   Inspired by High-Tech Terminal Craft, Matrix Telemetry, and Impeccable UI
+   Supports Dark (Cyber Void HUD) & Light (Cyber-Lab / Mirror's Edge)
+   ========================================================================== */
+
+:root, [data-theme="dark"] {
+  /* Typographic Roles */
+  --font-display: 'Orbitron', 'Chakra Petch', sans-serif;
+  --font-tech: 'Chakra Petch', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Cyber Void Obsidian & Carbon Palette */
+  --bg-canvas: #05070c;
+  --bg-surface: #0a0e18;
+  --bg-surface-elevated: #111728;
+  --bg-surface-hover: #18223c;
+  --bg-glass: rgba(10, 14, 24, 0.88);
+  --nav-bg: rgba(5, 7, 12, 0.94);
+
+  /* High-Voltage Cyber Neon Accents */
+  --cyber-cyan: #00f0ff;
+  --cyber-cyan-glow: rgba(0, 240, 255, 0.35);
+  --cyber-cyan-tint: rgba(0, 240, 255, 0.08);
+  --cyber-cyan-border: rgba(0, 240, 255, 0.32);
+
+  --cyber-green: #00ff66;
+  --cyber-green-glow: rgba(0, 255, 102, 0.32);
+  --cyber-green-tint: rgba(0, 255, 102, 0.08);
+  --cyber-green-border: rgba(0, 255, 102, 0.32);
+
+  --cyber-magenta: #ff007f;
+  --cyber-magenta-glow: rgba(255, 0, 127, 0.35);
+  --cyber-magenta-tint: rgba(255, 0, 127, 0.08);
+  --cyber-magenta-border: rgba(255, 0, 127, 0.35);
+
+  --cyber-amber: #f59e0b;
+  --cyber-amber-glow: rgba(245, 158, 11, 0.3);
+  --cyber-amber-tint: rgba(245, 158, 11, 0.08);
+  --cyber-amber-border: rgba(245, 158, 11, 0.32);
+
+  --cyber-violet: #8b5cf6;
+  --cyber-violet-tint: rgba(139, 92, 246, 0.12);
+  --cyber-violet-border: rgba(139, 92, 246, 0.35);
+
+  /* Legacy Mapping for Perfect Component Interop */
+  --gold-primary: #00f0ff;
+  --gold-light: #67e8f9;
+  --gold-tint: rgba(0, 240, 255, 0.1);
+  --gold-border: rgba(0, 240, 255, 0.35);
+
+  --emerald-primary: #00ff66;
+  --emerald-tint: rgba(0, 255, 102, 0.1);
+  --emerald-border: rgba(0, 255, 102, 0.32);
+
+  --amber-primary: #f59e0b;
+  --amber-tint: rgba(245, 158, 11, 0.1);
+  --amber-border: rgba(245, 158, 11, 0.32);
+
+  --crimson-primary: #ff007f;
+  --crimson-tint: rgba(255, 0, 127, 0.1);
+  --crimson-border: rgba(255, 0, 127, 0.35);
+
+  /* Tactical Hairline Precision Borders */
+  --border-hairline: rgba(0, 240, 255, 0.12);
+  --border-subtle: rgba(0, 240, 255, 0.24);
+  --border-focus: #00f0ff;
+
+  /* Cyber Monospace & Text Tiers */
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b9cb5;
+  --text-muted: #52637a;
+  --text-dim: #334155;
+
+  /* Cyber Elevation & Glows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 240, 255, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 240, 255, 0.12);
+
+  /* Element Themes */
+  --btn-primary-bg: #00f0ff;
+  --btn-primary-text: #05070c;
+  --btn-primary-border: #00f0ff;
+  --btn-secondary-bg: rgba(0, 240, 255, 0.05);
+  --btn-secondary-hover: rgba(0, 240, 255, 0.12);
+  --code-bg: #040609;
+  --modal-backdrop-bg: rgba(3, 4, 8, 0.88);
+
+  /* Background Grid & Vignette */
+  --vignette-radial: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.05) 0%, transparent 65%);
+}
+
+[data-theme="light"] {
+  /* Cyber-Lab / Mirror's Edge Technical Palette */
+  --font-display: 'Orbitron', 'Chakra Petch', sans-serif;
+  --font-tech: 'Chakra Petch', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --bg-canvas: #f2f4f8;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #e8ecf4;
+  --bg-surface-hover: #dce3f0;
+  --bg-glass: rgba(255, 255, 255, 0.94);
+  --nav-bg: rgba(242, 244, 248, 0.94);
+
+  /* High-Contrast Cyber Accents */
+  --cyber-cyan: #007799;
+  --cyber-cyan-glow: rgba(0, 119, 153, 0.2);
+  --cyber-cyan-tint: rgba(0, 119, 153, 0.08);
+  --cyber-cyan-border: rgba(0, 119, 153, 0.28);
+
+  --cyber-green: #05853a;
+  --cyber-green-glow: rgba(5, 133, 58, 0.2);
+  --cyber-green-tint: rgba(5, 133, 58, 0.08);
+  --cyber-green-border: rgba(5, 133, 58, 0.28);
+
+  --cyber-magenta: #b50e58;
+  --cyber-magenta-glow: rgba(181, 14, 88, 0.2);
+  --cyber-magenta-tint: rgba(181, 14, 88, 0.08);
+  --cyber-magenta-border: rgba(181, 14, 88, 0.28);
+
+  --cyber-amber: #b45309;
+  --cyber-amber-glow: rgba(180, 83, 9, 0.2);
+  --cyber-amber-tint: rgba(180, 83, 9, 0.08);
+  --cyber-amber-border: rgba(180, 83, 9, 0.28);
+
+  --cyber-violet: #6d28d9;
+  --cyber-violet-tint: rgba(109, 40, 217, 0.08);
+  --cyber-violet-border: rgba(109, 40, 217, 0.28);
+
+  /* Legacy Mapping for Interop */
+  --gold-primary: #007799;
+  --gold-light: #0099bb;
+  --gold-tint: rgba(0, 119, 153, 0.08);
+  --gold-border: rgba(0, 119, 153, 0.28);
+
+  --emerald-primary: #05853a;
+  --emerald-tint: rgba(5, 133, 58, 0.08);
+  --emerald-border: rgba(5, 133, 58, 0.28);
+
+  --amber-primary: #b45309;
+  --amber-tint: rgba(180, 83, 9, 0.08);
+  --amber-border: rgba(180, 83, 9, 0.28);
+
+  --crimson-primary: #b50e58;
+  --crimson-tint: rgba(181, 14, 88, 0.08);
+  --crimson-border: rgba(181, 14, 88, 0.28);
+
+  /* Clean Technical Hairlines */
+  --border-hairline: rgba(15, 23, 42, 0.12);
+  --border-subtle: rgba(15, 23, 42, 0.2);
+  --border-focus: #007799;
+
+  /* Carbon Ink Typography */
+  --text-primary: #0a0e17;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+
+  /* Subtle Clean Elevation */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 36px rgba(15, 23, 42, 0.1);
+
+  /* Element Themes */
+  --btn-primary-bg: #0a0e17;
+  --btn-primary-text: #ffffff;
+  --btn-primary-border: #0a0e17;
+  --btn-secondary-bg: #ffffff;
+  --btn-secondary-hover: #e8ecf4;
+  --code-bg: #f4f6fa;
+  --modal-backdrop-bg: rgba(10, 14, 23, 0.65);
+
+  --vignette-radial: radial-gradient(circle at 50% 0%, rgba(0, 119, 153, 0.035) 0%, transparent 65%);
+}
+
+/* Tactical Corner Chamfer Radii */
+:root {
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Browser Surfaces */
+::selection {
+  background: var(--gold-primary);
+  color: #ffffff;
+}
+
+[data-theme="light"] ::selection {
+  background: #ecdcb7;
+  color: #181715;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  background-image: 
+    linear-gradient(to right, rgba(0, 240, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.035) 1px, transparent 1px),
+    var(--vignette-radial);
+  background-size: 36px 36px, 36px 36px, 100% 100%;
+  background-attachment: fixed;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+[data-theme="light"] body {
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    var(--vignette-radial);
+  background-size: 36px 36px, 36px 36px, 100% 100%;
+}
+
+/* Tabular Numerals for Metrics & Timestamps */
+.tabular-nums, .font-mono, td, th {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cybercore Neon Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyber-cyan);
+  box-shadow: 0 0 10px var(--cyber-cyan);
+}
+
+/* Typography Scale */
+h1, h2, h3, h4 {
+  color: var(--text-primary);
+  font-family: var(--font-tech);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  letter-spacing: 0.02em;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.font-tech {
+  font-family: var(--font-tech);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Cyber HUD Surface Panels */
+.glass-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.25s ease, box-shadow 0.2s ease;
+}
+
+.glass-panel:hover {
+  border-color: var(--border-subtle);
+}
+
+/* Cyber Tactical Chamfer Cut */
+.cyber-chamfer {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.cyber-chamfer-both {
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+}
+
+/* Cyber Tactical Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-xs);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--font-tech);
+}
+
+.badge-easy {
+  background: var(--emerald-tint);
+  color: var(--emerald-primary);
+  border: 1px solid var(--emerald-border);
+}
+
+.badge-medium {
+  background: var(--amber-tint);
+  color: var(--amber-primary);
+  border: 1px solid var(--amber-border);
+}
+
+.badge-hard {
+  background: var(--crimson-tint);
+  color: var(--crimson-primary);
+  border: 1px solid var(--crimson-border);
+}
+
+.badge-mastered {
+  background: var(--gold-tint);
+  color: var(--gold-primary);
+  border: 1px solid var(--gold-border);
+}
+
+.badge-retained {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+[data-theme="dark"] .badge-retained {
+  color: #a5b4fc;
+}
+
+.badge-reviewing {
+  background: var(--amber-tint);
+  color: var(--amber-primary);
+  border: 1px solid var(--amber-border);
+}
+
+.badge-learning {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text-secondary);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.tag-pill {
+  display: inline-block;
+  padding: 3px 7px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-xs);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* Editorial Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  user-select: none;
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: 1px solid var(--btn-primary-border);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.05);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-gold, .btn-cyber-cyan {
+  background: var(--cyber-cyan);
+  color: #05070c;
+  border: 1px solid var(--cyber-cyan);
+  font-weight: 700;
+  font-family: var(--font-tech);
+  letter-spacing: 0.03em;
+  box-shadow: 0 0 12px var(--cyber-cyan-glow);
+}
+.btn-gold:hover, .btn-cyber-cyan:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 22px var(--cyber-cyan-glow);
+  filter: brightness(1.12);
+}
+
+.btn-cyber-green {
+  background: var(--cyber-green-tint);
+  color: var(--cyber-green);
+  border: 1px solid var(--cyber-green-border);
+  font-family: var(--font-tech);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.btn-cyber-green:hover {
+  background: rgba(0, 255, 102, 0.18);
+  border-color: var(--cyber-green);
+  box-shadow: 0 0 16px var(--cyber-green-glow);
+}
+
+.btn-cyber-magenta {
+  background: var(--cyber-magenta-tint);
+  color: var(--cyber-magenta);
+  border: 1px solid var(--cyber-magenta-border);
+  font-family: var(--font-tech);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.btn-cyber-magenta:hover {
+  background: rgba(255, 0, 127, 0.18);
+  border-color: var(--cyber-magenta);
+  box-shadow: 0 0 16px var(--cyber-magenta-glow);
+}
+
+.btn-cyber-amber {
+  background: var(--cyber-amber-tint);
+  color: var(--cyber-amber);
+  border: 1px solid var(--cyber-amber-border);
+  font-family: var(--font-tech);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.btn-cyber-amber:hover {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: var(--cyber-amber);
+  box-shadow: 0 0 16px var(--cyber-amber-glow);
+}
+
+.btn-secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-hairline);
+  font-family: var(--font-tech);
+  font-weight: 600;
+}
+.btn-secondary:hover {
+  background: var(--btn-secondary-hover);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.btn-emerald {
+  background: var(--cyber-green-tint);
+  color: var(--cyber-green);
+  border: 1px solid var(--cyber-green-border);
+  font-family: var(--font-tech);
+  font-weight: 600;
+}
+.btn-emerald:hover {
+  background: rgba(0, 255, 102, 0.18);
+  border-color: var(--cyber-green);
+  box-shadow: 0 0 16px var(--cyber-green-glow);
+}
+
+/* Cyber Terminal Scanline Effect */
+.cyber-scanline {
+  position: relative;
+  overflow: hidden;
+}
+.cyber-scanline::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 240, 255, 0.02) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.015), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.015));
+  z-index: 2;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+/* HUD Corner Reticle */
+.hud-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: var(--cyber-cyan);
+  pointer-events: none;
+}
+.hud-corner-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+.hud-corner-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+.hud-corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+.hud-corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+
+/* Modal Overlay with Easing */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 24px;
+  animation: modalFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.975) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Kinetic Typography Reveals (from kinetic-typography skill) */
+.kinetic-mask {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.kinetic-mask > span {
+  display: inline-block;
+  transform: translateY(110%);
+  animation: kineticRise 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes kineticRise {
+  from { transform: translateY(110%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Stagger utilities for reveals */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+
+/* Custom Luxury Scrollbar (Zero layout jitter/leak) */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
+
+/* Interactive Card Elevation & Polish */
+.card-hover-elevate {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
+}
+
+.card-hover-elevate:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Press & Micro-interaction Physics */
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Subtle Kinetic Polish */
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.animate-pulse-subtle {
+  animation: subtlePulse 3s ease-in-out infinite;
+}
+
+/* Respect Accessibility & Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
