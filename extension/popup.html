@@ -4,86 +4,177 @@
   <meta charset="utf-8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #FFFFFF;
+      --text: #000000;
+      --border: #000000;
+      --sunken: #F4F4F4;
+      --muted: #555555;
+      --header-bg: #000000;
+      --header-text: #FFFFFF;
+    }
+
+    body.dark-mode {
+      --bg: #000000;
+      --text: #FFFFFF;
+      --border: #FFFFFF;
+      --sunken: #141414;
+      --muted: #BBBBBB;
+      --header-bg: #FFFFFF;
+      --header-text: #000000;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      border-radius: 0 !important;
+      box-shadow: none !important;
     }
     body {
-      width: 310px;
-      padding: 16px;
-      background: #080c14;
-      color: #f1f5f9;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      width: 340px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      border: 4px solid var(--border);
+      user-select: none;
     }
+
+    /* Top Header Bar */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(0, 240, 255, 0.15);
-    }
-    .brand-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .logo {
-      width: 32px;
-      height: 32px;
-      background: #0f172a;
-      border: 1px solid rgba(0, 240, 255, 0.35);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #00f0ff;
-      font-size: 15px;
-      font-weight: 700;
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+      padding: 10px 14px;
+      background: var(--header-bg);
+      color: var(--header-text);
+      border-bottom: 3px solid var(--border);
     }
     .title {
-      font-family: 'Chakra Petch', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 14px;
+      letter-spacing: -0.01em;
       text-transform: uppercase;
-      color: #ffffff;
+      color: var(--header-text);
     }
-    .title span {
-      color: #00f0ff;
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .subtitle {
       font-size: 9px;
-      color: #64748b;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 0.04em;
+      color: var(--header-text);
+      opacity: 0.8;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      margin-top: 1px;
+    }
+    .theme-toggle-btn {
+      background: transparent;
+      color: var(--header-text);
+      border: 1.5px solid var(--header-text);
+      padding: 2px 7px;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .theme-toggle-btn:hover {
+      background: var(--header-text);
+      color: var(--header-bg);
     }
 
-    /* Toggle Card */
-    .toggle-card {
-      background: #0d1322;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
+    /* Interactive Pacey Stage Card */
+    .pacey-hero {
+      display: flex;
+      align-items: stretch;
+      border-bottom: 3px solid var(--border);
+      background: var(--bg);
+    }
+    .pacey-avatar-cell {
+      width: 108px;
+      min-height: 104px;
+      border-right: 3px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .corner-tick {
+      position: absolute;
+      font-family: 'Space Mono', monospace;
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--text);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .tick-tl { top: 4px; left: 6px; }
+    .tick-tr { top: 4px; right: 6px; }
+    .tick-bl { bottom: 4px; left: 6px; }
+    .tick-br { bottom: 4px; right: 6px; }
+
+    .pacey-readout-cell {
+      flex: 1;
       padding: 12px 14px;
-      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--sunken);
+    }
+    .pacey-badge {
+      display: inline-block;
+      align-self: flex-start;
+      background: var(--text);
+      color: var(--bg);
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 9.5px;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      text-transform: uppercase;
+    }
+    .pacey-msg {
+      font-family: 'Space Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text);
+      margin-top: 6px;
+    }
+    .pacey-hint {
+      font-family: 'Space Mono', monospace;
+      font-size: 8.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 6px;
+    }
+
+    .content {
+      padding: 14px 16px 16px 16px;
+    }
+
+    /* Toggle Cards */
+    .toggle-card {
+      background: var(--bg);
+      border: 3px solid var(--border);
+      padding: 10px 12px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: border-color 0.2s ease, background 0.2s ease;
-    }
-    .toggle-card.active {
-      border-color: rgba(0, 240, 255, 0.3);
-      background: rgba(0, 240, 255, 0.03);
+      gap: 10px;
     }
     .toggle-card.paused {
-      border-color: rgba(245, 158, 11, 0.3);
-      background: rgba(245, 158, 11, 0.03);
+      border-color: #FFA500;
     }
     .toggle-info {
       display: flex;
@@ -96,35 +187,34 @@
       gap: 6px;
     }
     .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #00ff66;
-      box-shadow: 0 0 8px #00ff66;
-      transition: all 0.2s ease;
+      width: 9px;
+      height: 9px;
+      background: #008000;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
     }
     .status-dot.paused {
-      background: #f59e0b;
-      box-shadow: 0 0 8px #f59e0b;
+      background: #FFA500;
     }
     .toggle-title {
       font-size: 11px;
       font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Space Mono', monospace;
       letter-spacing: 0.04em;
       text-transform: uppercase;
+      color: var(--text);
     }
     .toggle-desc {
       font-size: 10px;
-      color: #64748b;
+      color: var(--muted);
       line-height: 1.3;
     }
 
-    /* Switch Component */
+    /* RawBlock Rectangular Switch */
     .switch {
       position: relative;
       display: inline-block;
-      width: 44px;
+      width: 46px;
       height: 24px;
       flex-shrink: 0;
     }
@@ -136,161 +226,167 @@
     .slider {
       position: absolute;
       cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 24px;
+      inset: 0;
+      background-color: var(--bg);
+      border: 2px solid var(--border);
     }
     .slider:before {
       position: absolute;
       content: "";
-      height: 16px;
-      width: 16px;
+      height: 14px;
+      width: 14px;
       left: 3px;
       bottom: 3px;
-      background-color: #94a3b8;
-      transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 50%;
+      background-color: var(--text);
     }
     input:checked + .slider {
-      background-color: rgba(0, 240, 255, 0.18);
-      border-color: #00f0ff;
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+      background-color: var(--text);
     }
     input:checked + .slider:before {
-      transform: translateX(20px);
-      background-color: #00f0ff;
-      box-shadow: 0 0 6px #00f0ff;
+      transform: translateX(22px);
+      background-color: var(--bg);
     }
 
     /* Due Card */
-    .card {
-      background: #0d1322;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 12px;
+    .due-card {
+      background: var(--bg);
+      border: 3px solid var(--border);
+      padding: 10px 14px;
       margin-bottom: 12px;
-      text-align: center;
-    }
-    .due-number {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 28px;
-      font-weight: 700;
-      color: #00f0ff;
-      line-height: 1;
-      margin-bottom: 4px;
-      font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .due-label {
-      font-size: 9px;
-      color: #64748b;
-      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
+    }
+    .due-number {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 26px;
+      color: var(--text);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Action Buttons */
     .btn {
       display: block;
       width: 100%;
-      padding: 9px 12px;
-      border-radius: 6px;
-      border: 1px solid transparent;
+      padding: 11px 12px;
+      border: 3px solid var(--border);
       font-size: 11px;
       font-weight: 700;
       cursor: pointer;
       text-align: center;
       text-decoration: none;
-      margin-bottom: 7px;
-      transition: all 0.18s ease;
-      font-family: 'Chakra Petch', sans-serif;
-      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+      font-family: 'Archivo Black', sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .btn:last-child {
+      margin-bottom: 0;
     }
     .btn-primary {
-      background: #00f0ff;
-      color: #05070c;
-      border-color: #00f0ff;
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+      background: var(--text);
+      color: var(--bg);
     }
     .btn-primary:hover {
-      background: #38bdf8;
-      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      background: var(--bg);
+      color: var(--text);
     }
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.04);
-      color: #cbd5e1;
-      border-color: rgba(255, 255, 255, 0.1);
+      background: var(--bg);
+      color: var(--text);
     }
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(0, 240, 255, 0.3);
-      color: #f8fafc;
+      background: var(--text);
+      color: var(--bg);
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="brand-left">
-      <div class="logo">⚡</div>
+    <div class="title">PACED LEARNER</div>
+    <div class="header-right">
+      <div class="subtitle">FSRS // PACEY</div>
+      <button type="button" class="theme-toggle-btn" id="popup-theme-toggle" title="Toggle Dark Mode (Invert B&W + Pacey)">◐ DARK</button>
+    </div>
+  </div>
+
+  <!-- Interactive Pacey Mascot Stage -->
+  <div class="pacey-hero">
+    <div class="pacey-avatar-cell" id="popup-pacey-stage" title="Click Pacey to switch expression • Double-click for 3D Orbit">
+      <span class="corner-tick tick-tl">+</span>
+      <span class="corner-tick tick-tr">+</span>
+      <span class="corner-tick tick-bl">3D</span>
+      <span class="corner-tick tick-br">OBS</span>
+      <div id="popup-pacey-canvas"></div>
+    </div>
+    <div class="pacey-readout-cell">
       <div>
-        <div class="title">PACED<span>_LEARNER</span></div>
-        <div class="subtitle">FSRS CORE TELEMETRY</div>
+        <span class="pacey-badge" id="popup-pacey-badge">PACEY // ATTENTIVE</span>
+        <div class="pacey-msg" id="popup-pacey-msg">&gt; OBSERVING LEETCODE SOLVES &amp; ERRORS.</div>
       </div>
+      <div class="pacey-hint">[CLICK PACEY TO INTERACT]</div>
     </div>
   </div>
 
-  <!-- Extension Master Toggle -->
-  <div class="toggle-card active" id="toggle-card">
-    <div class="toggle-info">
-      <div class="toggle-label-row">
-        <div class="status-dot" id="status-dot"></div>
-        <span class="toggle-title" id="status-title">WATCHER: ACTIVE</span>
+  <div class="content">
+    <!-- Extension Master Toggle -->
+    <div class="toggle-card" id="toggle-card">
+      <div class="toggle-info">
+        <div class="toggle-label-row">
+          <div class="status-dot" id="status-dot"></div>
+          <span class="toggle-title" id="status-title">OBSERVER: ACTIVE</span>
+        </div>
+        <div class="toggle-desc" id="status-desc">
+          Pacey tracks editor actions, errors &amp; solves
+        </div>
       </div>
-      <div class="toggle-desc" id="status-desc">
-        Tracking LeetCode solve times & submissions
-      </div>
+      <label class="switch" title="Toggle LeetCode Pacey observer on or off">
+        <input type="checkbox" id="extension-toggle" checked>
+        <span class="slider"></span>
+      </label>
     </div>
-    <label class="switch" title="Toggle LeetCode watcher on or off">
-      <input type="checkbox" id="extension-toggle" checked>
-      <span class="slider"></span>
-    </label>
-  </div>
 
-  <!-- Auto-Log on Solved Toggle -->
-  <div class="toggle-card active" id="autolog-card" style="padding: 10px 14px; margin-bottom: 12px;">
-    <div class="toggle-info">
-      <div class="toggle-label-row">
-        <span style="font-size: 11px;">⚡</span>
-        <span class="toggle-title" id="autolog-title" style="font-size: 10px;">AUTO-LOG: ON</span>
+    <!-- Auto-Log on Solved Toggle -->
+    <div class="toggle-card" id="autolog-card">
+      <div class="toggle-info">
+        <div class="toggle-label-row">
+          <span class="toggle-title" id="autolog-title">AUTO-LOG: ON</span>
+        </div>
+        <div class="toggle-desc" id="autolog-desc">
+          Instant sync on Accepted without modal prompt
+        </div>
       </div>
-      <div class="toggle-desc" id="autolog-desc" style="font-size: 9.5px;">
-        Instant background sync on Accepted without popup
-      </div>
+      <label class="switch" title="Toggle instant auto-logging on Accepted">
+        <input type="checkbox" id="autolog-toggle" checked>
+        <span class="slider"></span>
+      </label>
     </div>
-    <label class="switch" title="Toggle instant auto-logging on Accepted">
-      <input type="checkbox" id="autolog-toggle" checked>
-      <span class="slider"></span>
-    </label>
+
+    <!-- Due Reviews Today -->
+    <div class="due-card">
+      <div class="due-label">RECALL QUEUE DUE TODAY</div>
+      <div class="due-number" id="due-count">0</div>
+    </div>
+
+    <button class="btn btn-primary" id="open-hub-btn">
+      OPEN PACED LEARNER HUB
+    </button>
+
+    <button class="btn btn-secondary" id="open-leetcode-btn">
+      OPEN LEETCODE PROBLEMS
+    </button>
   </div>
 
-  <!-- Due Reviews Today -->
-  <div class="card">
-    <div class="due-number" id="due-count">...</div>
-    <div class="due-label">RECALL QUEUE TODAY</div>
-  </div>
-
-  <button class="btn btn-primary" id="open-hub-btn">
-    LAUNCH RECALL TERMINAL
-  </button>
-
-  <button class="btn btn-secondary" id="open-leetcode-btn">
-    BROWSE LEETCODE
-  </button>
-
+  <script src="pacey-engine.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

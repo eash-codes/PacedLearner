@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "PacedLearner - LeetCode FSRS Watcher",
-  "version": "1.1.0",
-  "description": "Watches your LeetCode solves, rates effort, and syncs to your personal FSRS mastery hub.",
+  "name": "PacedLearner — Pacey LeetCode FSRS Observer",
+  "version": "1.2.0",
+  "description": "Pacey observes your LeetCode coding actions, errors, and submissions in real time and syncs solves to your FSRS mastery hub.",
   "permissions": [
     "storage",
     "activeTab",
@@ -29,20 +29,20 @@
       "matches": [
         "*://leetcode.com/problems/*"
       ],
-      "js": ["content.js"],
+      "js": ["pacey-engine.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["interceptor.js"],
+      "resources": ["interceptor.js", "pacey-engine.js"],
       "matches": ["*://leetcode.com/*"]
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "PacedLearner Hub",
+    "default_title": "PacedLearner — Pacey FSRS Observer",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

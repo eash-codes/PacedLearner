@@ -13,6 +13,17 @@ import {
 } from './db.js';
 import { analyzeCodeAndApproach, recommendEffortRating } from './approachAnalyzer.js';
 import { analyzeCodeWithGemini, generateSocraticHint } from './aiService.js';
+import {
+  getOllamaStatusAndModels,
+  chatWithPacey,
+  synthesizePaceySpeech,
+  transcribePaceyAudio
+} from './paceyBrainService.js';
+import {
+  processInterrogationStep,
+  generateFinalVerdict,
+  analyzeCodeInFlight
+} from './interrogationService.js';
 import { fsrsEngine } from './fsrs.js';
 import { connectMongo } from './mongoDb.js';
 import {
@@ -35,7 +46,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
 
 // Healthcheck
 app.get('/api/health', (req, res) => {
@@ -346,6 +357,209 @@ app.post('/api/github/push-all', async (req, res) => {
     res.json(batchResult);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// =========================================================================
+// PACEY MIND // LOCAL OLLAMA BRAIN & VOICE STUDIO READY ENDPOINTS
+// =========================================================================
+
+app.get('/api/pacey/models', async (req, res) => {
+  try {
+    const status = await getOllamaStatusAndModels();
+    res.json(status);
+  } catch (err) {
+    res.status(500).json({ online: false, error: err.message });
+  }
+});
+
+app.get('/api/pacey/voices', async (req, res) => {
+  try {
+    const status = await getOllamaStatusAndModels();
+    res.json({ success: true, voices: status.voices || [] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, voices: [] });
+  }
+});
+
+app.post('/api/pacey/chat', async (req, res) => {
+  try {
+    const { message, history = [], model = '', context = {} } = req.body || {};
+    if (!message || !String(message).trim()) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    // Enrich context with live vault telemetry if not already passed
+    const enrichedContext = { ...context };
+    if (enrichedContext.dueCount === undefined) {
+      try {
+        enrichedContext.dueCount = getDueReviews().length;
+      } catch (e) {}
+    }
+    if (enrichedContext.totalProblems === undefined) {
+      try {
+        enrichedContext.totalProblems = getAllProblems().length;
+      } catch (e) {}
+    }
+
+    const result = await chatWithPacey({
+      message: String(message).trim(),
+      history,
+      model,
+      context: enrichedContext
+    });
+
+    res.json({
+      success: true,
+      ...result
+    });
+  } catch (err) {
+    console.error('[Pacey Chat Error]:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// VoiceStudio Text-to-Speech (POST http://127.0.0.1:3900/generate & /v1/audio/speech)
+app.post('/api/pacey/tts', async (req, res) => {
+  try {
+    const {
+      text,
+      model = 'tts-1',
+      voice = 'PaceyChinese',
+      profile_id = '683e5f78',
+      seed = 307702207,
+      instruct = 'child, high pitch, chinese accent',
+      num_step = 12,
+      response_format = 'wav'
+    } = req.body || {};
+    if (!text || !String(text).trim()) {
+      return res.status(400).json({ error: 'Text is required for TTS' });
+    }
+    const audio = await synthesizePaceySpeech({
+      text: String(text).trim(),
+      model,
+      voice,
+      profileId: profile_id,
+      seed,
+      instruct,
+      numStep: num_step,
+      responseFormat: response_format
+    });
+    res.setHeader('Content-Type', audio.contentType || 'audio/wav');
+    res.send(audio.buffer);
+  } catch (err) {
+    console.error('[Pacey VoiceStudio TTS Error]:', err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+// VoiceStudio Speech-to-Text (POST http://127.0.0.1:3900/v1/audio/transcriptions)
+app.post('/api/pacey/stt', async (req, res) => {
+  try {
+    const { audioBase64, filename = 'speech.wav', mimeType = 'audio/wav', model = 'whisper-1' } = req.body || {};
+    if (!audioBase64) {
+      return res.status(400).json({ error: 'audioBase64 is required for transcription' });
+    }
+    const cleanB64 = String(audioBase64).replace(/^data:audio\/[^;]+;base64,/, '');
+    const audioBuffer = Buffer.from(cleanB64, 'base64');
+    const result = await transcribePaceyAudio({
+      audioBuffer,
+      filename,
+      mimeType,
+      model
+    });
+    res.json({
+      success: true,
+      text: result.text
+    });
+  } catch (err) {
+    console.error('[Pacey VoiceStudio STT Error]:', err.message);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+// =========================================================================
+// PACEY LIVE INTERROGATION ENGINE // MOCK INTERVIEWER ENDPOINTS
+// =========================================================================
+
+// Real-time interrogation dialogue & interruption step
+app.post('/api/pacey/interrogate', async (req, res) => {
+  try {
+    const {
+      problem = {},
+      code = '',
+      language = 'python',
+      phase = 'INTUITION',
+      trigger = 'user_spoke',
+      userSpeech = '',
+      silenceSeconds = 0,
+      history = []
+    } = req.body || {};
+
+    const stepResult = await processInterrogationStep({
+      problem,
+      code,
+      language,
+      phase,
+      trigger,
+      userSpeech,
+      silenceSeconds,
+      history
+    });
+
+    res.json(stepResult);
+  } catch (err) {
+    console.error('[Interrogate Step Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Real-time code telemetry analyzer for active editor
+app.post('/api/pacey/interrogate/analyze-code', (req, res) => {
+  try {
+    const { code = '', language = 'python' } = req.body || {};
+    const telemetry = analyzeCodeInFlight(code, language);
+    res.json({ success: true, telemetry });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Conclude interview & generate FAANG Scorecard
+app.post('/api/pacey/interrogate/verdict', async (req, res) => {
+  try {
+    const {
+      problem = {},
+      code = '',
+      language = 'python',
+      transcript = [],
+      timeSpentSeconds = 0,
+      silenceCount = 0
+    } = req.body || {};
+
+    const verdictResult = await generateFinalVerdict({
+      problem,
+      code,
+      language,
+      transcript,
+      timeSpentSeconds,
+      silenceCount
+    });
+
+    // If problem ID exists and scorecard has an FSRS grade, log it directly to FSRS
+    if (problem.id && verdictResult.scorecard?.fsrsGrade) {
+      try {
+        const grade = Math.max(1, Math.min(4, Math.round(Number(verdictResult.scorecard.fsrsGrade) || 1)));
+        gradeReview(problem.id, grade);
+      } catch (e) {
+        console.warn('[FSRS Auto-grade deferred]:', e.message);
+      }
+    }
+
+    res.json(verdictResult);
+  } catch (err) {
+    console.error('[Verdict Generation Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

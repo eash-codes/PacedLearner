@@ -7,12 +7,14 @@ import AnalyticsView from './components/AnalyticsView';
 import ExtensionGuideModal from './components/ExtensionGuideModal';
 import ManualAddModal from './components/ManualAddModal.jsx';
 import GitHubSyncModal from './components/GitHubSyncModal.jsx';
+import InterrogationRoom from './components/InterrogationRoom.jsx';
+import { MascotProvider, MascotCompanionDock } from './components/MascotCompanion.jsx';
 
 const API_BASE = 'http://localhost:4100/api';
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('paced_theme') || 'dark';
+    return localStorage.getItem('paced_theme') || 'light';
   });
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function App() {
 
   // Modals & Selected items
   const [selectedProblem, setSelectedProblem] = useState(null);
+  const [interrogationProblem, setInterrogationProblem] = useState(null);
   const [isExtensionGuideOpen, setIsExtensionGuideOpen] = useState(false);
   const [isManualAddOpen, setIsManualAddOpen] = useState(false);
   const [isGitHubSyncOpen, setIsGitHubSyncOpen] = useState(false);
@@ -172,106 +175,146 @@ export default function App() {
     setActiveTab('reviews');
   };
 
+  // Launch Live Voice Interrogation for a specific problem
+  const handleStartInterrogation = (problem) => {
+    setInterrogationProblem(problem || dueProblems[0] || allProblems[0] || null);
+    setActiveTab('interrogation');
+  };
+
+  const handleFinishInterview = async (problem, scorecard) => {
+    await fetchData(true);
+    setActiveTab('reviews');
+  };
+
+  const activeContextProblem = selectedProblem || dueProblems[0] || allProblems[0] || null;
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        dueCount={dueProblems.length}
-        stats={stats}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-        onRefresh={fetchData}
-        onOpenExtensionGuide={() => setIsExtensionGuideOpen(true)}
-        onOpenGitHubSync={() => setIsGitHubSyncOpen(true)}
-      />
+    <MascotProvider
+      theme={theme}
+      onToggleTheme={handleToggleTheme}
+      appContext={{
+        activeTab,
+        dueCount: dueProblems.length,
+        totalProblems: allProblems.length,
+        problem: activeContextProblem
+      }}
+    >
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', color: 'var(--text)' }}>
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          dueCount={dueProblems.length}
+          stats={stats}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          onRefresh={fetchData}
+          onOpenExtensionGuide={() => setIsExtensionGuideOpen(true)}
+          onOpenGitHubSync={() => setIsGitHubSyncOpen(true)}
+        />
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, paddingBottom: '4rem' }}>
-        {error ? (
-          <div style={{
-            maxWidth: '640px',
-            margin: '4rem auto',
-            padding: '2rem',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 'var(--radius-lg)',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ color: '#f87171', marginBottom: '8px' }}>Cannot Connect to Server</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              {error}
-            </p>
-            <button onClick={fetchData} className="btn btn-secondary">
-              Try Reconnecting
-            </button>
-          </div>
-        ) : (
-          <>
-            {activeTab === 'reviews' && (
-              <FlashcardReview
-                dueProblems={dueProblems}
-                onGradeReview={handleGradeReview}
-                onSelectProblem={(p) => setSelectedProblem(p)}
-                onSwitchToNotebook={() => setActiveTab('notebook')}
-                onOpenGitHubSync={() => setIsGitHubSyncOpen(true)}
-              />
-            )}
+        {/* Main Content Area */}
+        <main style={{ flex: 1, paddingBottom: '16rem' }}>
+          {error ? (
+            <div style={{
+              maxWidth: '640px',
+              margin: '4rem auto',
+              padding: '2.5rem',
+              background: 'var(--bg)',
+              border: '5px solid var(--error)',
+              textAlign: 'center'
+            }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--error)', marginBottom: '12px', textTransform: 'uppercase' }}>
+                CANNOT CONNECT TO SERVER
+              </h3>
+              <p style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
+                {error}
+              </p>
+              <button onClick={() => fetchData(false)} className="btn btn-secondary">
+                TRY RECONNECTING
+              </button>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'reviews' && (
+                <FlashcardReview
+                  dueProblems={dueProblems}
+                  onGradeReview={handleGradeReview}
+                  onSelectProblem={(p) => setSelectedProblem(p)}
+                  onSwitchToNotebook={() => setActiveTab('notebook')}
+                  onOpenGitHubSync={() => setIsGitHubSyncOpen(true)}
+                  onStartInterrogation={handleStartInterrogation}
+                />
+              )}
 
-            {activeTab === 'notebook' && (
-              <ProblemNotebook
-                problems={allProblems}
-                onSelectProblem={(p) => setSelectedProblem(p)}
-                onStartReviewProblem={handleStartReviewProblem}
-                onOpenManualAdd={() => setIsManualAddOpen(true)}
-                onOpenGitHubSync={() => setIsGitHubSyncOpen(true)}
-              />
-            )}
+              {activeTab === 'notebook' && (
+                <ProblemNotebook
+                  problems={allProblems}
+                  onSelectProblem={(p) => setSelectedProblem(p)}
+                  onStartReviewProblem={handleStartReviewProblem}
+                  onStartInterrogation={handleStartInterrogation}
+                  onOpenManualAdd={() => setIsManualAddOpen(true)}
+                  onOpenGitHubSync={() => setIsGitHubSyncOpen(true)}
+                />
+              )}
 
-            {activeTab === 'analytics' && (
-              <AnalyticsView
-                stats={stats}
-                problems={allProblems}
-              />
-            )}
-          </>
+              {activeTab === 'interrogation' && (
+                <InterrogationRoom
+                  allProblems={allProblems}
+                  dueProblems={dueProblems}
+                  initialProblem={interrogationProblem}
+                  onFinishInterview={handleFinishInterview}
+                  onBackToReviews={() => setActiveTab('reviews')}
+                />
+              )}
+
+              {activeTab === 'analytics' && (
+                <AnalyticsView
+                  stats={stats}
+                  problems={allProblems}
+                />
+              )}
+            </>
+          )}
+        </main>
+
+        {/* Detail Modal */}
+        {selectedProblem && (
+          <ProblemDetailModal
+            problem={selectedProblem}
+            onClose={() => setSelectedProblem(null)}
+            onUpdateNotes={handleUpdateNotes}
+            onStartReview={handleStartReviewProblem}
+            onStartInterrogation={handleStartInterrogation}
+            onProblemSynced={fetchData}
+          />
         )}
-      </main>
 
-      {/* Detail Modal */}
-      {selectedProblem && (
-        <ProblemDetailModal
-          problem={selectedProblem}
-          onClose={() => setSelectedProblem(null)}
-          onUpdateNotes={handleUpdateNotes}
-          onStartReview={handleStartReviewProblem}
+        {/* GitHub Solution Vault Modal */}
+        <GitHubSyncModal
+          isOpen={isGitHubSyncOpen}
+          onClose={() => setIsGitHubSyncOpen(false)}
+          problems={allProblems}
           onProblemSynced={fetchData}
         />
-      )}
 
-      {/* GitHub Solution Vault Modal */}
-      <GitHubSyncModal
-        isOpen={isGitHubSyncOpen}
-        onClose={() => setIsGitHubSyncOpen(false)}
-        problems={allProblems}
-        onProblemSynced={fetchData}
-      />
+        {/* Extension Setup Guide Modal */}
+        {isExtensionGuideOpen && (
+          <ExtensionGuideModal
+            onClose={() => setIsExtensionGuideOpen(false)}
+          />
+        )}
 
-      {/* Extension Setup Guide Modal */}
-      {isExtensionGuideOpen && (
-        <ExtensionGuideModal
-          onClose={() => setIsExtensionGuideOpen(false)}
-        />
-      )}
+        {/* Manual Problem Add Modal */}
+        {isManualAddOpen && (
+          <ManualAddModal
+            onClose={() => setIsManualAddOpen(false)}
+            onAddProblem={handleAddProblem}
+          />
+        )}
 
-      {/* Manual Problem Add Modal */}
-      {isManualAddOpen && (
-        <ManualAddModal
-          onClose={() => setIsManualAddOpen(false)}
-          onAddProblem={handleAddProblem}
-        />
-      )}
-    </div>
+        {/* Persistent Interactive Mascot Companion Dock */}
+        <MascotCompanionDock />
+      </div>
+    </MascotProvider>
   );
 }
-

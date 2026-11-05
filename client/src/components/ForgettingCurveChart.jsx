@@ -10,10 +10,8 @@ export default function ForgettingCurveChart({
   const FACTOR = 19 / 81;
   const DECAY = -0.5;
 
-  // Function to calculate R(t)
   const calcR = (t) => Math.pow(1 + FACTOR * (t / Math.max(0.1, stability)), DECAY);
 
-  // Time range from 0 to max(intervalDays * 2.5, elapsedDays * 1.5, 10)
   const maxDays = Math.max(intervalDays * 2.2, elapsedDays * 1.4, 7);
   const pointsCount = 40;
 
@@ -22,11 +20,9 @@ export default function ForgettingCurveChart({
   const graphWidth = width - padding.left - padding.right;
   const graphHeight = height - padding.top - padding.bottom;
 
-  // Convert (day, R) to SVG coordinates
   const getX = (d) => padding.left + (d / maxDays) * graphWidth;
-  const getY = (r) => padding.top + (1 - (r - 0.4) / 0.6) * graphHeight; // 40% to 100% scale
+  const getY = (r) => padding.top + (1 - (r - 0.4) / 0.6) * graphHeight;
 
-  // Generate SVG curve path
   const pathD = [];
   for (let i = 0; i <= pointsCount; i++) {
     const day = (i / pointsCount) * maxDays;
@@ -37,117 +33,103 @@ export default function ForgettingCurveChart({
     else pathD.push(`L ${x} ${y}`);
   }
 
-  // Current position
   const currentX = getX(Math.min(maxDays, elapsedDays));
   const currentY = getY(Math.max(0.4, currentRetrievability));
-
-  // 90% retention threshold line Y
   const y90 = getY(0.9);
 
   return (
     <div style={{
-      background: 'var(--bg-canvas)',
-      border: '1px solid var(--border-hairline)',
-      borderRadius: 'var(--radius-md)',
+      background: 'var(--bg)',
+      border: '3px solid var(--border)',
       padding: '16px',
-      position: 'relative'
+      position: 'relative',
+      color: 'var(--text)'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>
-            Ebbinghaus Retrieval Decay
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Space Mono', monospace" }}>
+            EBBINGHAUS RETRIEVAL DECAY
           </span>
           <span style={{
-            fontSize: '0.68rem',
-            padding: '1px 6px',
-            borderRadius: '3px',
-            background: 'var(--gold-tint)',
-            color: 'var(--gold-light)',
-            fontWeight: 600,
-            border: '1px solid var(--gold-border)',
-            fontFamily: 'var(--font-mono)'
+            fontSize: '11px',
+            padding: '2px 8px',
+            background: 'var(--text)',
+            color: 'var(--bg)',
+            fontWeight: 700,
+            fontFamily: "'Space Mono', monospace"
           }}>
-            Stability: {stability}d
+            S={stability}d
           </span>
         </div>
         <div style={{
-          fontSize: '0.76rem',
-          color: currentRetrievability < 0.90 ? '#fb7185' : '#34d399',
-          fontWeight: 600,
-          fontFamily: 'var(--font-mono)'
+          fontSize: '12px',
+          color: currentRetrievability < 0.90 ? 'var(--error)' : 'var(--success)',
+          fontWeight: 700,
+          fontFamily: "'Space Mono', monospace"
         }}>
-          Retention: {Math.round(currentRetrievability * 100)}%
+          RETENTION: {Math.round(currentRetrievability * 100)}%
         </div>
       </div>
 
       <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
         {/* Horizontal grid lines */}
-        <line x1={padding.left} y1={getY(1.0)} x2={width - padding.right} y2={getY(1.0)} stroke="rgba(255,255,255,0.05)" strokeDasharray="2 4" />
-        <line x1={padding.left} y1={getY(0.9)} x2={width - padding.right} y2={getY(0.9)} stroke="rgba(212, 175, 55, 0.25)" strokeDasharray="3 3" />
-        <line x1={padding.left} y1={getY(0.7)} x2={width - padding.right} y2={getY(0.7)} stroke="rgba(255,255,255,0.05)" strokeDasharray="2 4" />
-        <line x1={padding.left} y1={getY(0.5)} x2={width - padding.right} y2={getY(0.5)} stroke="rgba(255,255,255,0.05)" strokeDasharray="2 4" />
+        <line x1={padding.left} y1={getY(1.0)} x2={width - padding.right} y2={getY(1.0)} stroke="var(--text-muted)" strokeDasharray="2 4" opacity="0.45" />
+        <line x1={padding.left} y1={getY(0.9)} x2={width - padding.right} y2={getY(0.9)} stroke="var(--text)" strokeDasharray="4 4" />
+        <line x1={padding.left} y1={getY(0.7)} x2={width - padding.right} y2={getY(0.7)} stroke="var(--text-muted)" strokeDasharray="2 4" opacity="0.45" />
+        <line x1={padding.left} y1={getY(0.5)} x2={width - padding.right} y2={getY(0.5)} stroke="var(--text-muted)" strokeDasharray="2 4" opacity="0.45" />
 
-        {/* 90% Target Retention Label */}
-        <text x={padding.left - 6} y={y90 + 3} fill="var(--gold-primary)" fontSize="9" textAnchor="end" fontWeight="600" fontFamily="var(--font-mono)">90%</text>
-        <text x={padding.left - 6} y={getY(1.0) + 3} fill="var(--text-muted)" fontSize="9" textAnchor="end" fontFamily="var(--font-mono)">100%</text>
-        <text x={padding.left - 6} y={getY(0.7) + 3} fill="var(--text-muted)" fontSize="9" textAnchor="end" fontFamily="var(--font-mono)">70%</text>
-
-        {/* 90% Target Line Accent */}
-        <line x1={padding.left} y1={y90} x2={width - padding.right} y2={y90} stroke="var(--gold-primary)" strokeWidth="1" strokeDasharray="3 3" opacity="0.3" />
+        {/* Y-axis Labels */}
+        <text x={padding.left - 6} y={y90 + 3} fill="var(--text)" fontSize="10" textAnchor="end" fontWeight="700" fontFamily="'Space Mono', monospace">90%</text>
+        <text x={padding.left - 6} y={getY(1.0) + 3} fill="var(--text-secondary)" fontSize="10" textAnchor="end" fontFamily="'Space Mono', monospace">100%</text>
+        <text x={padding.left - 6} y={getY(0.7) + 3} fill="var(--text-secondary)" fontSize="10" textAnchor="end" fontFamily="'Space Mono', monospace">70%</text>
 
         {/* Area under curve */}
-        <defs>
-          <linearGradient id="curveFill" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="var(--gold-primary)" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="var(--gold-primary)" stopOpacity="0.0" />
-          </linearGradient>
-        </defs>
-
         <path
           d={`${pathD.join(' ')} L ${getX(maxDays)} ${getY(0.4)} L ${getX(0)} ${getY(0.4)} Z`}
-          fill="url(#curveFill)"
+          fill="var(--text)"
+          opacity="0.08"
         />
 
         {/* Main decay curve */}
         <path
           d={pathD.join(' ')}
           fill="none"
-          stroke="var(--gold-primary)"
-          strokeWidth="1.75"
-          strokeLinecap="round"
+          stroke="var(--text)"
+          strokeWidth="2.5"
+          strokeLinecap="square"
         />
 
         {/* Current status point */}
         <circle
           cx={currentX}
           cy={currentY}
-          r="4.5"
-          fill={currentRetrievability < 0.90 ? '#f43f5e' : '#10b981'}
-          stroke="#08090c"
-          strokeWidth="1.5"
+          r="5"
+          fill={currentRetrievability < 0.90 ? 'var(--error)' : 'var(--text)'}
+          stroke="var(--bg)"
+          strokeWidth="2"
         />
 
         {/* Current Position Marker Text */}
         <text
           x={Math.min(width - padding.right - 10, Math.max(padding.left + 10, currentX))}
           y={currentY - 10}
-          fill="#f8fafc"
-          fontSize="9"
-          fontWeight="600"
+          fill="var(--text)"
+          fontSize="10"
+          fontWeight="700"
           textAnchor="middle"
-          fontFamily="var(--font-mono)"
+          fontFamily="'Space Mono', monospace"
         >
-          {currentRetrievability < 0.90 ? 'Review Due' : 'Retained'}
+          {currentRetrievability < 0.90 ? 'REVIEW DUE' : 'RETAINED'}
         </text>
 
         {/* X-axis labels */}
-        <text x={padding.left} y={height - 8} fill="var(--text-muted)" fontSize="9" textAnchor="start" fontFamily="var(--font-mono)">0d</text>
-        <text x={getX(maxDays / 2)} y={height - 8} fill="var(--text-muted)" fontSize="9" textAnchor="middle" fontFamily="var(--font-mono)">{Math.round(maxDays / 2)}d</text>
-        <text x={width - padding.right} y={height - 8} fill="var(--text-muted)" fontSize="9" textAnchor="end" fontFamily="var(--font-mono)">{Math.round(maxDays)}d</text>
+        <text x={padding.left} y={height - 6} fill="var(--text)" fontSize="10" textAnchor="start" fontFamily="'Space Mono', monospace">0d</text>
+        <text x={getX(maxDays / 2)} y={height - 6} fill="var(--text)" fontSize="10" textAnchor="middle" fontFamily="'Space Mono', monospace">{Math.round(maxDays / 2)}d</text>
+        <text x={width - padding.right} y={height - 6} fill="var(--text)" fontSize="10" textAnchor="end" fontFamily="'Space Mono', monospace">{Math.round(maxDays)}d</text>
       </svg>
 
-      <p style={{ fontSize: '0.70rem', color: 'var(--text-muted)', marginTop: '8px', fontFamily: 'var(--font-sans)' }}>
-        FSRS schedules the next recall test precisely before retrievability falls below the 90% threshold.
+      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px', fontFamily: "'Work Sans', sans-serif" }}>
+        FSRS schedules the next recall test right before retrievability drops below the 90% threshold.
       </p>
     </div>
   );

@@ -37,58 +37,66 @@ export default function ManualAddModal({ onClose, onAddProblem }) {
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'var(--bg)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: '24px'
+      }}
+      onClick={onClose}
+    >
       <div
-        className="glass-panel animate-fade-in"
-        onClick={(e) => e.stopPropagation()}
         style={{
-          width: '720px',
-          maxWidth: '92vw',
+          width: '100%',
+          maxWidth: '720px',
           maxHeight: '90vh',
           overflowY: 'auto',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '2.25rem'
+          background: 'var(--bg)',
+          border: '5px solid var(--border)',
+          display: 'flex',
+          flexDirection: 'column'
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
+        <div style={{ padding: '24px', borderBottom: '3px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h3 style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '1.6rem',
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.01em',
-              marginBottom: '4px'
+              fontFamily: "'Archivo Black', sans-serif",
+              fontSize: '32px',
+              color: 'var(--text)',
+              marginBottom: '8px',
+              textTransform: 'uppercase'
             }}>
-              Catalog Algorithmic Solution
+              CATALOG ALGORITHMIC SOLUTION
             </h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              Add a problem to PacedLearner with FSRS retention scheduling.
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '15px', color: 'var(--text)', margin: 0 }}>
+              ADD A PROBLEM TO PACEDLEARNER WITH FSRS RETENTION SCHEDULING.
             </p>
           </div>
           <button
             onClick={onClose}
+            className="btn-ghost"
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              padding: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              fontSize: '24px',
+              padding: '0 8px'
             }}
           >
-            <X size={18} />
+            ✕
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '24px' }}>
           <div>
-            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-              Problem Title *
+            <label className="input-label">
+              PROBLEM TITLE *
             </label>
             <input
               type="text"
@@ -96,39 +104,21 @@ export default function ManualAddModal({ onClose, onAddProblem }) {
               placeholder="e.g. 3Sum"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                background: 'var(--bg-canvas)',
-                border: '1px solid var(--border-hairline)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-primary)',
-                fontSize: '0.88rem',
-                outline: 'none',
-                fontFamily: 'var(--font-sans)'
-              }}
+              className="input-field"
+              style={{ width: '100%' }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             <div>
-              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-                Difficulty Tier
+              <label className="input-label">
+                DIFFICULTY TIER
               </label>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  background: 'var(--bg-canvas)',
-                  border: '1px solid var(--border-hairline)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.88rem',
-                  outline: 'none',
-                  fontFamily: 'var(--font-sans)'
-                }}
+                className="input-field"
+                style={{ width: '100%' }}
               >
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
@@ -137,78 +127,58 @@ export default function ManualAddModal({ onClose, onAddProblem }) {
             </div>
 
             <div>
-              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-                Solve Duration (Minutes)
+              <label className="input-label">
+                SOLVE DURATION (MINUTES)
               </label>
               <input
                 type="number"
                 value={timeSpentMinutes}
                 onChange={(e) => setTimeSpentMinutes(Number(e.target.value))}
                 min="1"
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  background: 'var(--bg-canvas)',
-                  border: '1px solid var(--border-hairline)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.88rem',
-                  outline: 'none',
-                  fontFamily: 'var(--font-mono)'
-                }}
+                className="input-field"
+                style={{ width: '100%' }}
               />
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-              Patterns & Invariants (comma separated)
+            <label className="input-label">
+              PATTERNS & INVARIANTS (COMMA SEPARATED)
             </label>
             <input
               type="text"
               placeholder="e.g. Two Pointers, Monotonic Queue, Sliding Window"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                background: 'var(--bg-canvas)',
-                border: '1px solid var(--border-hairline)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-primary)',
-                fontSize: '0.88rem',
-                outline: 'none',
-                fontFamily: 'var(--font-sans)'
-              }}
+              className="input-field"
+              style={{ width: '100%' }}
             />
           </div>
 
           <div>
-            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-              Initial FSRS Recall Calibration
+            <label className="input-label">
+              INITIAL FSRS RECALL CALIBRATION
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
               {[
-                { val: 1, label: 'Again (1d)', color: '#fb7185' },
-                { val: 2, label: 'Hard (2d)', color: '#fbbf24' },
-                { val: 3, label: 'Good (4d)', color: '#34d399' },
-                { val: 4, label: 'Easy (8d)', color: 'var(--gold-light)' }
+                { val: 1, label: 'AGAIN (1D)' },
+                { val: 2, label: 'HARD (2D)' },
+                { val: 3, label: 'GOOD (4D)' },
+                { val: 4, label: 'EASY (8D)' }
               ].map((r) => (
                 <button
                   type="button"
                   key={r.val}
                   onClick={() => setRating(r.val)}
                   style={{
-                    padding: '9px 6px',
-                    borderRadius: 'var(--radius-xs)',
-                    border: rating === r.val ? '1px solid var(--gold-border)' : '1px solid var(--border-hairline)',
-                    background: rating === r.val ? 'var(--gold-tint)' : 'var(--bg-canvas)',
-                    color: rating === r.val ? 'var(--gold-light)' : 'var(--text-secondary)',
+                    padding: '12px',
+                    border: `3px solid ${rating === r.val ? 'var(--text)' : 'var(--border)'}`,
+                    background: rating === r.val ? 'var(--text)' : 'var(--bg)',
+                    color: rating === r.val ? 'var(--bg)' : 'var(--text)',
                     fontWeight: 600,
-                    fontSize: '0.78rem',
+                    fontSize: '15px',
                     cursor: 'pointer',
-                    fontFamily: 'var(--font-mono)',
-                    transition: 'all 0.15s ease'
+                    fontFamily: "'Space Mono', monospace"
                   }}
                 >
                   {r.label}
@@ -218,61 +188,41 @@ export default function ManualAddModal({ onClose, onAddProblem }) {
           </div>
 
           <div>
-            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-              Invariant & Strategy Notes
+            <label className="input-label">
+              INVARIANT & STRATEGY NOTES
             </label>
             <textarea
               placeholder="What algorithmic invariant or structural insight unlocks this solution?"
               value={intuition}
               onChange={(e) => setIntuition(e.target.value)}
               rows={3}
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                background: 'var(--bg-canvas)',
-                border: '1px solid var(--border-hairline)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-primary)',
-                fontSize: '0.86rem',
-                outline: 'none',
-                fontFamily: 'var(--font-sans)',
-                lineHeight: 1.55
-              }}
+              className="input-field"
+              style={{ width: '100%', resize: 'vertical' }}
             />
           </div>
 
           <div>
-            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-              Accepted Solution Code (Optional)
+            <label className="input-label">
+              ACCEPTED SOLUTION CODE (OPTIONAL)
             </label>
             <textarea
               placeholder="Paste accepted code implementation..."
               value={code}
               onChange={(e) => setCode(e.target.value)}
               rows={4}
-              style={{
-                width: '100%',
-                padding: '12px 14px',
-                background: 'var(--code-bg)',
-                border: '1px solid var(--border-hairline)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-primary)',
-                fontSize: '0.82rem',
-                outline: 'none',
-                fontFamily: 'var(--font-mono)',
-                lineHeight: 1.55
-              }}
+              className="input-field"
+              style={{ width: '100%', fontFamily: "'Space Mono', monospace", resize: 'vertical' }}
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="btn btn-gold"
-            style={{ marginTop: '8px', padding: '12px', width: '100%' }}
+            className="btn-primary"
+            style={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
           >
-            <Plus size={15} />
-            <span>{submitting ? 'Cataloging...' : 'Catalog in PacedLearner'}</span>
+            <Plus size={20} />
+            <span>{submitting ? 'CATALOGING...' : 'CATALOG IN PACEDLEARNER'}</span>
           </button>
         </form>
       </div>
