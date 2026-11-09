@@ -137,35 +137,37 @@ export function markProblemGithubSynced(problemId, githubUrl) {
 }
 
 
-// Seed initial data if empty
-const countStmt = db.prepare('SELECT COUNT(*) as count FROM problems');
-const rowCount = countStmt.get();
-if (rowCount.count === 0) {
-  const insertStmt = db.prepare(`
-    INSERT INTO problems (
-      id, title, slug, difficulty, url, tags, patterns, intuition,
-      time_complexity, space_complexity, code_snippet, language, pitfalls,
-      fsrs_stability, fsrs_difficulty, fsrs_reps, fsrs_lapses, fsrs_state,
-      retrievability, interval_days, next_review_date, last_reviewed_at,
-      mastery_level, consecutive_clean, created_at, updated_at
-    ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?, ?
-    )
-  `);
+// Seed initial data only if explicitly requested via SEED_INITIAL_DATA=true
+if (process.env.SEED_INITIAL_DATA === 'true') {
+  const countStmt = db.prepare('SELECT COUNT(*) as count FROM problems');
+  const rowCount = countStmt.get();
+  if (rowCount.count === 0) {
+    const insertStmt = db.prepare(`
+      INSERT INTO problems (
+        id, title, slug, difficulty, url, tags, patterns, intuition,
+        time_complexity, space_complexity, code_snippet, language, pitfalls,
+        fsrs_stability, fsrs_difficulty, fsrs_reps, fsrs_lapses, fsrs_state,
+        retrievability, interval_days, next_review_date, last_reviewed_at,
+        mastery_level, consecutive_clean, created_at, updated_at
+      ) VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?
+      )
+    `);
 
-  const now = new Date().toISOString();
-  for (const p of INITIAL_PROBLEMS) {
-    insertStmt.run(
-      p.id, p.title, p.slug, p.difficulty, p.url, p.tags, p.patterns, p.intuition,
-      p.time_complexity, p.space_complexity, p.code_snippet, p.language, p.pitfalls,
-      p.fsrs_stability, p.fsrs_difficulty, p.fsrs_reps, p.fsrs_lapses, p.fsrs_state,
-      p.retrievability, p.interval_days, p.next_review_date, p.last_reviewed_at,
-      p.mastery_level, p.consecutive_clean, now, now
-    );
+    const now = new Date().toISOString();
+    for (const p of INITIAL_PROBLEMS) {
+      insertStmt.run(
+        p.id, p.title, p.slug, p.difficulty, p.url, p.tags, p.patterns, p.intuition,
+        p.time_complexity, p.space_complexity, p.code_snippet, p.language, p.pitfalls,
+        p.fsrs_stability, p.fsrs_difficulty, p.fsrs_reps, p.fsrs_lapses, p.fsrs_state,
+        p.retrievability, p.interval_days, p.next_review_date, p.last_reviewed_at,
+        p.mastery_level, p.consecutive_clean, now, now
+      );
+    }
   }
 }
 
