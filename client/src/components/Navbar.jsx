@@ -5,6 +5,7 @@ export default function Navbar({
   activeTab,
   setActiveTab,
   dueCount = 0,
+  chokeDueCount = 0,
   stats,
   theme = 'light',
   onToggleTheme,
@@ -55,6 +56,7 @@ export default function Navbar({
     { id: 'reviews', label: 'REVIEW QUEUE' },
     { id: 'notebook', label: 'PROBLEM LOG' },
     { id: 'interrogation', label: 'INTERROGATION' },
+    { id: 'surgery', label: 'SURGERY' },
     { id: 'analytics', label: 'ANALYTICS' }
   ];
 
@@ -143,6 +145,18 @@ export default function Navbar({
                   fontFamily: "'Space Mono', monospace"
                 }}>
                   {dueCount}
+                </span>
+              )}
+              {tab.id === 'surgery' && chokeDueCount > 0 && (
+                <span style={{
+                  background: 'var(--error)',
+                  color: '#FFFFFF',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  padding: '1px 6px',
+                  fontFamily: "'Space Mono', monospace"
+                }}>
+                  {chokeDueCount}
                 </span>
               )}
             </button>

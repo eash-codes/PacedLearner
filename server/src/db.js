@@ -120,6 +120,45 @@ db.exec(`
     reviews_completed INTEGER DEFAULT 0,
     solves_completed INTEGER DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS choke_points (
+    id TEXT PRIMARY KEY,
+    problem_id TEXT,
+    title TEXT NOT NULL,
+    target_function TEXT,
+    description TEXT NOT NULL,
+    language TEXT DEFAULT 'javascript',
+    choke_code TEXT NOT NULL,
+    scaffold_code TEXT NOT NULL,
+    test_cases TEXT NOT NULL,
+    fsrs_stability REAL DEFAULT 2.0,
+    fsrs_difficulty REAL DEFAULT 5.0,
+    fsrs_reps INTEGER DEFAULT 0,
+    fsrs_lapses INTEGER DEFAULT 0,
+    fsrs_state TEXT DEFAULT 'Learning',
+    retrievability REAL DEFAULT 1.0,
+    interval_days INTEGER DEFAULT 1,
+    next_review_date TEXT NOT NULL,
+    last_reviewed_at TEXT,
+    mastery_level TEXT DEFAULT 'Learning',
+    consecutive_clean INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY(problem_id) REFERENCES problems(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS choke_reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    choke_point_id TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    elapsed_ms INTEGER DEFAULT 0,
+    user_code TEXT,
+    passed INTEGER NOT NULL,
+    test_results TEXT,
+    pacey_critique TEXT,
+    reviewed_at TEXT NOT NULL,
+    FOREIGN KEY(choke_point_id) REFERENCES choke_points(id) ON DELETE CASCADE
+  );
 `);
 
 // Migration for GitHub sync tracking columns
@@ -546,5 +585,214 @@ export function getAnalyticsStats() {
     difficulty_breakdown: difficultyCounts,
     topic_distribution: topicMap,
     recent_activity: streaks
+  };
+}
+
+/**
+ * Choke Point Surgery DB Helpers
+ */
+export function getAllChokePoints() {
+  const stmt = db.prepare('SELECT * FROM choke_points ORDER BY created_at DESC');
+  const rows = stmt.all();
+  const now = Date.now();
+
+  return rows.map(r => {
+    const lastTime = r.last_reviewed_at ? new Date(r.last_reviewed_at).getTime() : new Date(r.created_at).getTime();
+    const elapsedDays = Math.max(0, (now - lastTime) / (1000 * 60 * 60 * 24));
+    const liveR = fsrsEngine.getRetrievability(elapsedDays, r.fsrs_stability);
+    let testCasesParsed = [];
+    try {
+      testCasesParsed = JSON.parse(r.test_cases || '[]');
+    } catch (e) {
+      testCasesParsed = [];
+    }
+
+    return {
+      ...r,
+      test_cases: testCasesParsed,
+      retrievability: Number(liveR.toFixed(3)),
+      is_due: new Date(r.next_review_date).getTime() <= now || liveR < 0.90
+    };
+  });
+}
+
+export function getDueChokePoints() {
+  const all = getAllChokePoints();
+  return all.filter(c => c.is_due).sort((a, b) => a.retrievability - b.retrievability);
+}
+
+export function getChokePointById(id) {
+  const stmt = db.prepare('SELECT * FROM choke_points WHERE id = ?');
+  const r = stmt.get(id);
+  if (!r) return null;
+
+  const now = Date.now();
+  const lastTime = r.last_reviewed_at ? new Date(r.last_reviewed_at).getTime() : new Date(r.created_at).getTime();
+  const elapsedDays = Math.max(0, (now - lastTime) / (1000 * 60 * 60 * 24));
+  const liveR = fsrsEngine.getRetrievability(elapsedDays, r.fsrs_stability);
+
+  const reviewsStmt = db.prepare('SELECT * FROM choke_reviews WHERE choke_point_id = ? ORDER BY reviewed_at DESC');
+  const reviews = reviewsStmt.all(r.id).map(rev => {
+    let tr = [];
+    try { tr = JSON.parse(rev.test_results || '[]'); } catch (e) {}
+    return { ...rev, test_results: tr };
+  });
+
+  let testCasesParsed = [];
+  try {
+    testCasesParsed = JSON.parse(r.test_cases || '[]');
+  } catch (e) {
+    testCasesParsed = [];
+  }
+
+  return {
+    ...r,
+    test_cases: testCasesParsed,
+    retrievability: Number(liveR.toFixed(3)),
+    is_due: new Date(r.next_review_date).getTime() <= now || liveR < 0.90,
+    reviews
+  };
+}
+
+export function createChokePoint({
+  id,
+  problem_id = null,
+  title,
+  target_function = '',
+  description,
+  language = 'javascript',
+  choke_code,
+  scaffold_code,
+  test_cases = []
+}) {
+  const chokeId = id || `cp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  const now = new Date().toISOString();
+  const testCasesJson = typeof test_cases === 'string' ? test_cases : JSON.stringify(test_cases);
+
+  // Initialize with initial FSRS review
+  const initialFsrs = fsrsEngine.initReview(3);
+
+  const stmt = db.prepare(`
+    INSERT INTO choke_points (
+      id, problem_id, title, target_function, description, language,
+      choke_code, scaffold_code, test_cases,
+      fsrs_stability, fsrs_difficulty, fsrs_reps, fsrs_lapses, fsrs_state,
+      retrievability, interval_days, next_review_date, last_reviewed_at,
+      mastery_level, consecutive_clean, created_at, updated_at
+    ) VALUES (
+      ?, ?, ?, ?, ?, ?,
+      ?, ?, ?,
+      ?, ?, ?, ?, ?,
+      ?, ?, ?, ?,
+      ?, ?, ?, ?
+    )
+  `);
+
+  stmt.run(
+    chokeId, problem_id, title, target_function, description, language,
+    choke_code, scaffold_code, testCasesJson,
+    initialFsrs.stability, initialFsrs.difficulty, 0, 0, 'Learning',
+    1.0, initialFsrs.interval_days, initialFsrs.next_review_date, null,
+    'Learning', 0, now, now
+  );
+
+  return getChokePointById(chokeId);
+}
+
+export function deleteChokePoint(id) {
+  db.prepare('DELETE FROM choke_reviews WHERE choke_point_id = ?').run(id);
+  const info = db.prepare('DELETE FROM choke_points WHERE id = ?').run(id);
+  return info.changes > 0;
+}
+
+export function gradeChokeReview(chokePointId, {
+  rating = 3,
+  elapsed_ms = 0,
+  user_code = '',
+  passed = 1,
+  test_results = [],
+  pacey_critique = ''
+}) {
+  const cp = db.prepare('SELECT * FROM choke_points WHERE id = ?').get(chokePointId);
+  if (!cp) throw new Error('Choke point not found');
+
+  const now = new Date().toISOString();
+  const fsrsState = fsrsEngine.review({
+    stability: cp.fsrs_stability,
+    difficulty: cp.fsrs_difficulty,
+    reps: cp.fsrs_reps,
+    lapses: cp.fsrs_lapses,
+    last_review: cp.last_reviewed_at
+  }, rating);
+
+  const consecutive = rating >= 3 && passed ? (cp.consecutive_clean + 1) : 0;
+  let masteryLevel = cp.mastery_level;
+  if (fsrsEngine.isMastered(fsrsState.stability, fsrsState.reps, consecutive)) {
+    masteryLevel = 'Mastered';
+  } else if (fsrsState.stability > 14) {
+    masteryLevel = 'Retained';
+  } else if (fsrsState.stability > 3) {
+    masteryLevel = 'Reviewing';
+  } else {
+    masteryLevel = 'Learning';
+  }
+
+  const updateStmt = db.prepare(`
+    UPDATE choke_points SET
+      fsrs_stability = ?,
+      fsrs_difficulty = ?,
+      fsrs_reps = ?,
+      fsrs_lapses = ?,
+      fsrs_state = ?,
+      retrievability = ?,
+      interval_days = ?,
+      next_review_date = ?,
+      last_reviewed_at = ?,
+      mastery_level = ?,
+      consecutive_clean = ?,
+      updated_at = ?
+    WHERE id = ?
+  `);
+
+  updateStmt.run(
+    fsrsState.stability, fsrsState.difficulty, fsrsState.reps, fsrsState.lapses,
+    fsrsState.state, fsrsState.retrievability, fsrsState.interval_days,
+    fsrsState.next_review_date, now, masteryLevel, consecutive, now, chokePointId
+  );
+
+  const testResultsJson = typeof test_results === 'string' ? test_results : JSON.stringify(test_results);
+  const revStmt = db.prepare(`
+    INSERT INTO choke_reviews (
+      choke_point_id, rating, elapsed_ms, user_code, passed, test_results, pacey_critique, reviewed_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  revStmt.run(
+    chokePointId, rating, elapsed_ms, user_code, passed ? 1 : 0, testResultsJson, pacey_critique, now
+  );
+
+  recordStreakDay(now, 0, 1);
+  return getChokePointById(chokePointId);
+}
+
+export function getChokePointStats() {
+  const all = getAllChokePoints();
+  const total = all.length;
+  const due = all.filter(c => c.is_due).length;
+
+  const reviews = db.prepare('SELECT * FROM choke_reviews').all();
+  const totalReviews = reviews.length;
+  const passedReviews = reviews.filter(r => r.passed === 1).length;
+  const passRate = totalReviews > 0 ? Number(((passedReviews / totalReviews) * 100).toFixed(1)) : 100;
+
+  const totalElapsedMs = reviews.reduce((acc, r) => acc + (r.elapsed_ms || 0), 0);
+  const avgElapsedSeconds = totalReviews > 0 ? Number(((totalElapsedMs / totalReviews) / 1000).toFixed(1)) : 0;
+
+  return {
+    total,
+    due,
+    total_reviews: totalReviews,
+    pass_rate: passRate,
+    avg_elapsed_seconds: avgElapsedSeconds
   };
 }

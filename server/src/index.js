@@ -9,7 +9,14 @@ import {
   gradeReview,
   updateProblemNotes,
   getAnalyticsStats,
-  markProblemGithubSynced
+  markProblemGithubSynced,
+  getAllChokePoints,
+  getDueChokePoints,
+  getChokePointById,
+  createChokePoint,
+  deleteChokePoint,
+  gradeChokeReview,
+  getChokePointStats
 } from './db.js';
 import { analyzeCodeAndApproach, recommendEffortRating } from './approachAnalyzer.js';
 import { analyzeCodeWithGemini, generateSocraticHint } from './aiService.js';
@@ -24,6 +31,11 @@ import {
   generateFinalVerdict,
   analyzeCodeInFlight
 } from './interrogationService.js';
+import {
+  runChokeCode,
+  extractChokePoint,
+  generatePaceyChokeVerdict
+} from './chokePointService.js';
 import { fsrsEngine } from './fsrs.js';
 import { connectMongo } from './mongoDb.js';
 import {
@@ -559,6 +571,185 @@ app.post('/api/pacey/interrogate/verdict', async (req, res) => {
     res.json(verdictResult);
   } catch (err) {
     console.error('[Verdict Generation Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// CHOKE-POINT SURGERY API ROUTES
+// ==========================================
+
+// Get all choke points
+app.get('/api/choke-points', (req, res) => {
+  try {
+    const chokePoints = getAllChokePoints();
+    res.json({ success: true, choke_points: chokePoints });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get due choke points for today
+app.get('/api/choke-points/due', (req, res) => {
+  try {
+    const dueChokePoints = getDueChokePoints();
+    res.json({ success: true, choke_points: dueChokePoints });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get choke points statistics
+app.get('/api/choke-points/stats', (req, res) => {
+  try {
+    const stats = getChokePointStats();
+    res.json({ success: true, stats });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get a single choke point by ID
+app.get('/api/choke-points/:id', (req, res) => {
+  try {
+    const cp = getChokePointById(req.params.id);
+    if (!cp) return res.status(404).json({ success: false, error: 'Choke point not found' });
+    res.json({ success: true, choke_point: cp });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Auto-extract choke point from problem code
+app.post('/api/choke-points/extract', async (req, res) => {
+  try {
+    const { code, language = 'javascript', title = '', intuition = '', problemId = null } = req.body || {};
+    if (!code) {
+      return res.status(400).json({ success: false, error: 'Code is required for extraction' });
+    }
+    const extracted = await extractChokePoint({ code, language, title, intuition, problemId });
+    res.json({ success: true, choke_point: extracted });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Create/Save a choke point
+app.post('/api/choke-points', (req, res) => {
+  try {
+    const {
+      id,
+      problem_id,
+      title,
+      target_function,
+      description,
+      language = 'javascript',
+      choke_code,
+      scaffold_code,
+      test_cases = []
+    } = req.body || {};
+
+    if (!title || !choke_code || !scaffold_code) {
+      return res.status(400).json({ success: false, error: 'title, choke_code, and scaffold_code are required' });
+    }
+
+    const created = createChokePoint({
+      id,
+      problem_id,
+      title,
+      target_function,
+      description: description || `Complete the ${target_function || 'algorithmic'} hinge`,
+      language,
+      choke_code,
+      scaffold_code,
+      test_cases
+    });
+
+    res.json({ success: true, choke_point: created });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Dry-run user code against choke point tests (no review logged)
+app.post('/api/choke-points/:id/run', (req, res) => {
+  try {
+    const cp = getChokePointById(req.params.id);
+    if (!cp) return res.status(404).json({ success: false, error: 'Choke point not found' });
+
+    const { user_code = '' } = req.body || {};
+    const testRun = runChokeCode({
+      scaffoldCode: cp.scaffold_code,
+      userCode: user_code,
+      testCases: cp.test_cases,
+      targetFunction: cp.target_function,
+      language: cp.language
+    });
+
+    res.json({ success: true, test_run: testRun });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Submit final surgery drill review (grades FSRS and generates Pacey roast/verdict)
+app.post('/api/choke-points/:id/review', async (req, res) => {
+  try {
+    const cp = getChokePointById(req.params.id);
+    if (!cp) return res.status(404).json({ success: false, error: 'Choke point not found' });
+
+    const { user_code = '', elapsed_ms = 0, explicit_rating = null } = req.body || {};
+
+    // 1. Run unit tests
+    const testRun = runChokeCode({
+      scaffoldCode: cp.scaffold_code,
+      userCode: user_code,
+      testCases: cp.test_cases,
+      targetFunction: cp.target_function,
+      language: cp.language
+    });
+
+    // 2. Generate Pacey's psychological verdict
+    const paceyVerdict = await generatePaceyChokeVerdict({
+      chokePoint: cp,
+      passed: testRun.passed,
+      elapsedMs: elapsed_ms,
+      passedCount: testRun.passedCount,
+      total: testRun.total,
+      error: testRun.syntaxError || (testRun.results.find(r => !r.passed)?.error)
+    });
+
+    // 3. Determine FSRS rating (use explicit if provided, otherwise derived from verdict)
+    const rating = explicit_rating || paceyVerdict.rating;
+
+    // 4. Record review in DB and update FSRS intervals
+    const updatedChokePoint = gradeChokeReview(cp.id, {
+      rating,
+      elapsed_ms,
+      user_code,
+      passed: testRun.passed ? 1 : 0,
+      test_results: testRun.results,
+      pacey_critique: paceyVerdict.critique
+    });
+
+    res.json({
+      success: true,
+      choke_point: updatedChokePoint,
+      test_run: testRun,
+      pacey_verdict: paceyVerdict
+    });
+  } catch (err) {
+    console.error('[Choke Review Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Delete choke point
+app.delete('/api/choke-points/:id', (req, res) => {
+  try {
+    const success = deleteChokePoint(req.params.id);
+    res.json({ success });
+  } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });

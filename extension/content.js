@@ -478,6 +478,7 @@
         </div>
         <div class="pl-dock-controls">
           <button type="button" class="pl-icon-btn ${isInterrogationActive ? 'pl-interrogate-active' : ''}" id="pl-interrogate-btn" title="Toggle Live FAANG Mock Interrogation Mode (Pacey drills you out loud)">${isInterrogationActive ? '🎯 MOCK' : '🎙 MOCK'}</button>
+          <button type="button" class="pl-icon-btn" id="pl-surgery-btn" title="Carve & Extract 90s Choke-Point Surgery Drill for this problem">🩸 SURGERY</button>
           <button type="button" class="pl-icon-btn" id="pl-voice-btn" title="Toggle Pacey Speak Out (VoiceStudio 127.0.0.1:3900)">${isSpeakOutEnabled ? '🔊' : '🔇'}</button>
           <button type="button" class="pl-icon-btn" id="pl-mind-btn" title="Toggle Pacey Qwen3.5 Mind">${isMindOpen ? 'HIDE' : 'MIND'}</button>
           <button type="button" class="pl-icon-btn" id="pl-theme-btn" title="Toggle Dark Mode (Invert B&W + Pacey)">${isDarkMode ? '◑' : '◐'}</button>
@@ -719,6 +720,52 @@
           holdMs: 2500
         });
       }
+    });
+
+    document.getElementById('pl-surgery-btn')?.addEventListener('click', () => {
+      const meta = getProblemMetadata();
+      const code = capturedCode || '// Write solution';
+
+      setPaceyObservation({
+        state: 'swirl',
+        expr: 'attentif',
+        msg: `CARVING CHOKE POINT // ANALYZING ${meta.title || 'PROBLEM'}...`,
+        obsTarget: 'SURGERY: CARVING',
+        holdMs: 4000
+      });
+
+      chrome.runtime.sendMessage(
+        {
+          type: 'EXTRACT_CHOKE_POINT',
+          payload: {
+            code,
+            title: meta.title,
+            language: capturedLang || 'javascript'
+          }
+        },
+        (res) => {
+          if (res?.success) {
+            setPaceyObservation({
+              state: 'orbit',
+              expr: 'fier',
+              msg: `CHOKE POINT CARVED // READY FOR 90s SURGERY DRILL`,
+              obsTarget: 'SURGERY: READY',
+              obsVariant: 'success',
+              holdMs: 5000
+            });
+            window.open('http://localhost:5173', '_blank');
+          } else {
+            setPaceyObservation({
+              state: 'burst',
+              expr: 'colere',
+              msg: `EXTRACTION FAILED // ${res?.error || 'CHECK LOCAL SERVER :4100'}`,
+              obsTarget: 'SURGERY: ERROR',
+              obsVariant: 'error',
+              holdMs: 5000
+            });
+          }
+        }
+      );
     });
 
     document.getElementById('pl-voice-btn')?.addEventListener('click', () => {
@@ -1571,11 +1618,17 @@
           <strong>${escapeHtml(meta.title)}</strong> • ${formatTime(elapsedSeconds)} • ${failedAttempts} ERRS • FSRS: <strong>${label}</strong>
         </div>
       </div>
+      <button class="pl-toast-btn" id="pl-toast-surgery-btn" style="border-color: #FF3B30; color: #FF3B30;">🩸 SURGERY</button>
       <button class="pl-toast-btn" id="pl-toast-edit-btn">GRADE / NOTES</button>
       <button class="pl-toast-close" id="pl-toast-close-btn">✕</button>
     `;
 
     document.body.appendChild(toast);
+
+    document.getElementById('pl-toast-surgery-btn')?.addEventListener('click', () => {
+      toast.remove();
+      window.open('http://localhost:5173', '_blank');
+    });
 
     document.getElementById('pl-toast-close-btn')?.addEventListener('click', () => {
       toast.remove();

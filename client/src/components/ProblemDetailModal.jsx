@@ -17,6 +17,7 @@ export default function ProblemDetailModal({
   onUpdateNotes,
   onStartReview,
   onStartInterrogation,
+  onStartSurgery,
   onProblemSynced
 }) {
   if (!problem) return null;
@@ -209,6 +210,27 @@ export default function ProblemDetailModal({
               >
                 <span>🎙</span>
                 <span>INTERROGATE</span>
+              </button>
+            )}
+
+            {onStartSurgery && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onStartSurgery(problem);
+                }}
+                className="btn btn-secondary"
+                style={{
+                  padding: '8px 14px',
+                  fontSize: '0.78rem',
+                  gap: '6px',
+                  border: '2px solid var(--error)',
+                  color: 'var(--error)'
+                }}
+                title="Launch 90s Choke-Point Surgery Drill"
+              >
+                <span>🩸</span>
+                <span>SURGERY</span>
               </button>
             )}
 

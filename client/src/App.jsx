@@ -8,6 +8,7 @@ import ExtensionGuideModal from './components/ExtensionGuideModal';
 import ManualAddModal from './components/ManualAddModal.jsx';
 import GitHubSyncModal from './components/GitHubSyncModal.jsx';
 import InterrogationRoom from './components/InterrogationRoom.jsx';
+import ChokePointSurgery from './components/ChokePointSurgery.jsx';
 import { MascotProvider, MascotCompanionDock } from './components/MascotCompanion.jsx';
 
 const API_BASE = 'http://localhost:4100/api';
@@ -29,6 +30,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('reviews'); // reviews | notebook | analytics
   const [allProblems, setAllProblems] = useState([]);
   const [dueProblems, setDueProblems] = useState([]);
+  const [chokeDueCount, setChokeDueCount] = useState(0);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,10 +48,11 @@ export default function App() {
       if (!isSilent) setLoading(true);
       setError(null);
 
-      const [probRes, dueRes, statRes] = await Promise.all([
+      const [probRes, dueRes, statRes, chokeRes] = await Promise.all([
         fetch(`${API_BASE}/problems`),
         fetch(`${API_BASE}/reviews/due`),
-        fetch(`${API_BASE}/analytics`)
+        fetch(`${API_BASE}/analytics`),
+        fetch(`${API_BASE}/choke-points/due`).catch(() => null)
       ]);
 
       if (!probRes.ok || !dueRes.ok || !statRes.ok) {
@@ -59,6 +62,10 @@ export default function App() {
       const probData = await probRes.json();
       const dueData = await dueRes.json();
       const statData = await statRes.json();
+      if (chokeRes && chokeRes.ok) {
+        const chokeData = await chokeRes.json();
+        setChokeDueCount((chokeData.choke_points || []).length);
+      }
 
       setAllProblems(probData.problems || []);
       setDueProblems(dueData.problems || []);
@@ -181,6 +188,11 @@ export default function App() {
     setActiveTab('interrogation');
   };
 
+  // Launch Choke-Point Surgery
+  const handleStartSurgery = (problem) => {
+    setActiveTab('surgery');
+  };
+
   const handleFinishInterview = async (problem, scorecard) => {
     await fetchData(true);
     setActiveTab('reviews');
@@ -204,6 +216,7 @@ export default function App() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           dueCount={dueProblems.length}
+          chokeDueCount={chokeDueCount}
           stats={stats}
           theme={theme}
           onToggleTheme={handleToggleTheme}
@@ -267,6 +280,14 @@ export default function App() {
                 />
               )}
 
+              {activeTab === 'surgery' && (
+                <ChokePointSurgery
+                  allProblems={allProblems}
+                  onSelectProblem={(p) => setSelectedProblem(p)}
+                  onBackToReviews={() => setActiveTab('reviews')}
+                />
+              )}
+
               {activeTab === 'analytics' && (
                 <AnalyticsView
                   stats={stats}
@@ -285,6 +306,7 @@ export default function App() {
             onUpdateNotes={handleUpdateNotes}
             onStartReview={handleStartReviewProblem}
             onStartInterrogation={handleStartInterrogation}
+            onStartSurgery={handleStartSurgery}
             onProblemSynced={fetchData}
           />
         )}

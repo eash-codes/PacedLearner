@@ -104,6 +104,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'EXTRACT_CHOKE_POINT') {
+    fetch(`${API_BASE}/choke-points/extract`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(message.payload)
+    })
+      .then((res) => res.json())
+      .then(async (extractData) => {
+        if (!extractData.success) {
+          sendResponse({ success: false, error: extractData.error });
+          return;
+        }
+        const saveRes = await fetch(`${API_BASE}/choke-points`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(extractData.choke_point)
+        });
+        const saveData = await saveRes.json();
+        updateBadge();
+        sendResponse(saveData);
+      })
+      .catch((err) => {
+        sendResponse({ success: false, error: err.message });
+      });
+    return true;
+  }
+
   if (message.type === 'GET_PACEY_MODELS') {
     fetch(`${API_BASE}/pacey/models`)
       .then((res) => res.json())
